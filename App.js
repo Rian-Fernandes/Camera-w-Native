@@ -1,34 +1,41 @@
-import React, {useEffect, useState} from 'react';
-import { StyleSheet, Text, View, SafeAreaViewBase } from 'react-native';
-import { Camera } from 'expo-camera'
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, Alert } from 'react-native';
+import { Camera } from 'expo-camera';
 
 export default function App() {
+  const [type, setType] = useState(Camera.Constants.Type.back);
+  const [hasPermission, setHasPermission] = useState(null);
 
-  const [type, setType] = useState(Camera.Constants.Type.back)
-  const [hasPermission, setHasPermission] = useState(null)
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permissão da Câmera',
+          'É necessário permitir o acesso à câmera para utilizar este aplicativo.',
+          [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
+        );
+      }
+    })();
+  }, []);
 
-  useEffect (() =>{
-    (async () =>{
-      const {status} = await Camera.requestPermissionsAsync()
-      setHasPermission(status === "granted")
-    })()
-  }, [])
-
-  if(hasPermission === null){
-    return <View/>
+  if (hasPermission === null) {
+    return <View />;
   }
 
-  if(hasPermission === false){
-    return <Text>Acesso negado</Text>
+  if (hasPermission === false) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text>Acesso negado</Text>
+      </SafeAreaView>
+    );
   }
-  
+
   return (
-    <SafeAreaViewBase style={styles.container}>
-      <Camera
-      type={type}
-      style={styles.camera}
-      ></Camera>
-    </SafeAreaViewBase>
+    <SafeAreaView style={styles.container}>
+      <Camera type={type} style={styles.camera}></Camera>
+    </SafeAreaView>
   );
 }
 
@@ -37,8 +44,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  camera:{
-    width:"100%",
-    height:"100%",
-  }
+  camera: {
+    width: '100%',
+    height: '100%',
+  },
 });
